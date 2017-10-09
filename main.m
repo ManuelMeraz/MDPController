@@ -17,7 +17,7 @@ noise.covariance = eye(dimensions) * 0.1;
 
 % State is a struct containing all state parameters
 state.stateBounds = [-pi/4, pi/4; -1, 1];
-state.numStates = 10;
+state.numStates = 3;
 
 
 % Calculates the step size between each upper and lower bound

@@ -25,10 +25,7 @@ function a = VStar(discount, state, noise, S, vS, A, dt, s)
     for i = 1:length(A)
 
         % Commit to action a
-        '==================== Current Action VSTAR=======================';
         a = A(1, i);
-        s;
-        '=======================<<>>>===============================';
         R(1,i) = a;
         R(2,i) = 0;
         depth = 0;
@@ -38,39 +35,25 @@ function a = VStar(discount, state, noise, S, vS, A, dt, s)
         T = transitionProbabilities(S, sPrime, state, noise);
         sPrime = mapToDiscreteValue(S, sPrime);
         for j = 1:length(vS)
-            '-------------------- Current State VSTAR-----------------------';
-            depth;
+
             sPrime = vS(:,j);
-            current_reward = getReward(sPrime);
             psPrime = getTransitionProbability(T, vS, sPrime);
+
             % Bellman Equation. Sum of future rewards
-            added_reward = psPrime * (getReward(sPrime) + ...
+            futureRewards = psPrime * (getReward(sPrime) + ...
             discount * QStar(depth + 1, discount, state, noise, S, vS, A, dt, sPrime));
-            R(2, i) += added_reward;
-            '-----------------------<<>>>-------------------------------';
+            R(2, i) += futureRewards;
         end
     end
 
-    %'###################### Best action for state VSTAR###########################'
-    %'###################### Best action for state VSTAR###########################'
-    %'###################### Best action for state VSTAR###########################'
-    R;
-    s;
     a = R(1,1);
     reward = R(2,1);
-    state_reward = getReward(s);
-    %'###################### Best action for state VSTAR###########################'
-    %'###################### Best action for state VSTAR###########################'
-    %'###################### Best action for state VSTAR###########################'
     maxIndex = 1;
     for i = 2:length(R)
         if R(2,i) > R(2, maxIndex)
-            '###################### Best action for state VSTAR###########################';
-            s;
             reward = R(2,i);
             a = R(1,i);
             maxIndex = i;
-            '###################### Best action for state VSTAR###########################';
         end
     end
 end
@@ -81,27 +64,15 @@ function r = QStar(depth, discount, state, noise, S, vS, A, dt, s)
     % Given a state and action compute the sum of the rewards
     % for all future states
     r = 0;
-    if depth >= 1
+    if depth >= 2
         return;
     end
 
-    %'-----------------------------------------'
-    depth;
-    s;
-    r1 = getReward(s);
     for i = 1:length(A)
-        r;
         a = A(1, i);
         sPrime = simulateOneStep(s(1,1), s(2,1), dt, a);
         T = transitionProbabilities(S, sPrime, state, noise);
-        %'-----------'
-        %depth
-        %vS
-        %T
-        %s
-        %sPrime
         sPrime = mapToDiscreteValue(S, sPrime);
-        %'--------------'
 
         for j = 1:length(vS)
             sPrime = vS(:,j);
@@ -111,8 +82,6 @@ function r = QStar(depth, discount, state, noise, S, vS, A, dt, s)
             discount * QStar(depth + 1, discount, state, noise, S, vS, A, dt, sPrime));
         end
     end
-    r;
-    '-----------------------------------------';
 end
 
 function ps = getTransitionProbability(T, S, sPrime) 
@@ -121,16 +90,10 @@ function ps = getTransitionProbability(T, S, sPrime)
 
    for i = 1:length(S)
        if sPrime(1,1) == S(1,i) && sPrime(2,1) == S(2,i)
-           'Getting Transitions >>>>>>>>>>>>>>>>>>>>>>>';
            index = i;
            theta = sPrime(1,1);
            thetaDot = sPrime(2,1);
-           S(1, i);
-           S(2,i);
            ps = T(1,i) * T(2,i);
-           T;
-           S;
-           'Getting Transitions >>>>>>>>>>>>>>>>>>>>>>>';
        end
    end
 
