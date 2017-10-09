@@ -5,9 +5,9 @@ function sPrime = simulateOneStep(theta,thetaDot,deltaT,u)
     Jt = J + m * l ^ 2;
 
     % TODO remove this final result
-    if(theta > 0)
-        u = -u;
-    end
+    %if(theta > 0)
+        %u = -u;
+    %end
 
     angularAcceleration = m * g * l * sin(theta) / Jt - (gamma * thetaDot)/ Jt + (l / Jt) * cos(theta) * u;
 
