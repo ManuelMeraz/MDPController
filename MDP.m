@@ -6,10 +6,9 @@ function Policy = MDP(state, noise, S, vS, A, dt)
     numStates = state.numStates;
     discount = 0.9;
 
-    length = length(vS)
+    length = length(vS);
     for i = 1:length
-        'Percentage Done' 
-        i/length * 100
+        PercentageCompleted = i/length * 100
         s = vS(:,i);
         Policy(:,i) = s;
         bestActions(:,i) = VStar(discount, state, noise, S, vS, A, dt, vS(:,i));
