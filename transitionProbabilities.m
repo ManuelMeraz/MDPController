@@ -55,6 +55,10 @@ function T = transitionProbabilities(S, sPrime, state, noise)
         sum(d, 1) += 1 - sum(d, 1);
     end
 
+    [ThetaTransitions, ThetaDotTransitions] = meshgrid(T(1,:), T(2,:));
+    T = [reshape(ThetaTransitions, 1, numel(ThetaTransitions));...
+    reshape(ThetaDotTransitions, 1, numel(ThetaDotTransitions))];
+
 end
 
 function p = getLeftProbability(x, mu, variance)
