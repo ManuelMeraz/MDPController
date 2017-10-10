@@ -58,7 +58,7 @@ catch
 
 end
 
-theta = pi/6;
+theta = 0;
 thetaDot = 0;
 data(1,1) = theta;
 data(1,2) = thetaDot;
@@ -94,7 +94,7 @@ for i = 2:maxIterations
         minTheta = theta;
     end
 
-    if theta < setPoint - pi/3 || theta > setPoint + pi/3
+    if theta < setPoint - pi/4 || theta > setPoint + pi/4
         FAIL = true;
         break;
     end
