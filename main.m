@@ -18,7 +18,7 @@ end
 
 % Time step size
 dt = 0.1; % Seconds
-maxIterations = 1000;
+maxIterations = 500;
 
 % Number of dimensions state vector is in
 dimensions = 2;
@@ -28,7 +28,7 @@ noise.mu = zeros(dimensions, 1);
 noise.covariance = eye(dimensions) * 0.1;
 
 % State is a struct containing all state parameters
-setPoint = pi/2;
+setPoint = 0;
 state.stateBounds = [setPoint-pi/4, setPoint+pi/4; -5, 5];
 state.numStates = 3;
 
