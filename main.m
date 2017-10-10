@@ -1,3 +1,15 @@
+% Manuel Meraz
+% EECS 270 Robot Algorithms
+% Makov Decision Processes Controller for Simple Inverted Pendulum
+% S = Set States where row 1 is the discretized set of thetas and row 2
+% is the discretized set of thetaDots (length is numStates)
+
+% vS = Set of states where every posible combination has a given column vector
+% where its length is S^2
+
+% 
+
+% If previous policy has been generated, load it from the Policies.mat file
 try
     Policies = load('Policies.mat', 'Policies').Policies;
 catch
@@ -16,7 +28,8 @@ noise.mu = zeros(dimensions, 1);
 noise.covariance = eye(dimensions) * 0.1;
 
 % State is a struct containing all state parameters
-state.stateBounds = [-pi/4, pi/4; -1, 1];
+setPoint = pi/2;
+state.stateBounds = [setPoint-pi/4, setPoint+pi/4; -5, 5];
 state.numStates = 3;
 
 
@@ -32,7 +45,8 @@ end
 A = [-100, -10, -2, 0, 2, 10, 100];
 
 % Set of states
-S = [linspace(-pi/4, pi/4, state.numStates); linspace(-5, 5, state.numStates)];
+S = [linspace(state.stateBounds(1,1), state.stateBounds(1,2), state.numStates);...
+linspace(state.stateBounds(2,1), state.stateBounds(2,2), state.numStates)];
 
 % Generate all possible state vectors
 [Thetas, ThetaDots] = meshgrid(S(1,:), S(2,:));
@@ -51,12 +65,13 @@ catch
 
 end
 
-theta = 0.0001;
+theta = pi/6;
 thetaDot = 0;
 data(1,1) = theta;
-%data(1,2) = thetaDot;
-%data(1,3) = getReward([theta;thetaDot]);
+data(1,2) = thetaDot;
+data(1,3) = getReward([theta;thetaDot]);
 
+u = 0;
 s = mapToDiscreteValue(S, [theta;thetaDot]);
 e = 0.00001;
 for i = 1:length(Policy)
@@ -69,13 +84,41 @@ for i = 1:length(Policy)
     end
 end
 
+i = 2;
+FAIL = false;
+maxThetaDot = minThetaDot = thetaDot;
+meanTheta = maxTheta = minTheta = theta;
 for i = 2:maxIterations
     sPrime = simulateOneStep(theta, thetaDot, dt, u);
-    theta = sPrime(1,1);
+    meanTheta += theta = sPrime(1,1);
+
+    % Avquire max and min theta
+    if theta > maxTheta
+        maxTheta = theta;
+    end
+
+    if theta < minTheta
+        minTheta = theta;
+    end
+
+    if theta < setPoint - pi/4 || theta > setPoint + pi/4
+        FAIL = true;
+        break;
+    end
     thetaDot = sPrime(2,1);
+
+    % Acquire max and min thetaDot
+    if thetaDot > maxThetaDot
+        maxThetaDot = thetaDot;
+    end
+
+    if thetaDot < minThetaDot
+        minThetaDot = thetaDot;
+    end
+
     data (i,1) = theta;
-    %data(i,2) = thetaDot;
-    %data(i, 3) = getReward([theta;thetaDot]);
+    data(i,2) = thetaDot;
+    data(i, 3) = getReward([theta;thetaDot]);
 
     sPrime = mapToDiscreteValue(S, [theta;thetaDot]);
     thetaD = sPrime(1,1);
@@ -91,12 +134,27 @@ for i = 2:maxIterations
     end
 end
 
-setenv("GNUTERM","qt");
+meanTheta /= maxIterations;
+
+Policy
+
+if FAIL 
+
+    fprintf('Pendulum went out of bounds! Pendulum went out of bounds after %d iterations!\n\n\n', i)
+else
+    fprintf('Pendulum ran was controlled beautifully for %d iterations! \n\n\n', i)
+end
+
+fprintf('Max Theta: %d\nMin Theta: %d\nMax ThetaDot: %d\nMin ThetaDot: %d\nMean Theta: %d\n',...
+maxTheta, minTheta, maxThetaDot, minThetaDot, meanTheta)
+
+fprintf('\n\n\n')
+
 figure('Position',[0,0,1300,700]);
 h = plot(data, 'linewidth', 1);
 set(gca, "linewidth", 4, "fontsize", 12)
 title("Inverted Pendulum controlled with MDP");
 %legend('Theta', 'ThetaDot', 'Force', 'Reward');
-%legend('Theta', 'ThetaDot', 'Reward');
-legend('Theta');
+legend('Theta', 'ThetaDot', 'Reward');
+%legend('Theta');
 pause();
