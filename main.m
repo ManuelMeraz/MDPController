@@ -1,13 +1,6 @@
 % Manuel Meraz
 % EECS 270 Robot Algorithms
 % Makov Decision Processes Controller for Simple Inverted Pendulum
-% S = Set States where row 1 is the discretized set of thetas and row 2
-% is the discretized set of thetaDots (length is numStates)
-
-% vS = Set of states where every posible combination has a given column vector
-% where its length is S^2
-
-% 
 
 % If previous policy has been generated, load it from the Policies.mat file
 try
@@ -18,7 +11,7 @@ end
 
 % Time step size
 dt = 0.1; % Seconds
-maxIterations = 1000;
+maxIterations = 500;
 
 % Number of dimensions state vector is in
 dimensions = 2;
@@ -30,7 +23,7 @@ noise.covariance = eye(dimensions) * 0.1;
 % State is a struct containing all state parameters
 setPoint = pi/2;
 state.stateBounds = [setPoint-pi/4, setPoint+pi/4; -5, 5];
-state.numStates = 3;
+state.numStates = 5;
 
 
 % Calculates the step size between each upper and lower bound
@@ -42,7 +35,7 @@ for dimension = 1:dimensions
 end
 
 % Set of actions
-A = [-100, -10, -2, 0, 2, 10, 100];
+A = [-200:200];
 
 % Set of states
 S = [linspace(state.stateBounds(1,1), state.stateBounds(1,2), state.numStates);...
@@ -101,10 +94,10 @@ for i = 2:maxIterations
         minTheta = theta;
     end
 
-    if theta < setPoint - pi/4 || theta > setPoint + pi/4
-        FAIL = true;
-        break;
-    end
+    %if theta < setPoint - pi/3 || theta > setPoint + pi/3
+        %FAIL = true;
+        %break;
+    %end
     thetaDot = sPrime(2,1);
 
     % Acquire max and min thetaDot

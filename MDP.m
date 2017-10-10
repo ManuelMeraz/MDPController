@@ -64,7 +64,7 @@ function r = QStar(depth, discount, state, noise, S, vS, A, dt, s)
     % Given a state and action compute the sum of the rewards
     % for all future states
     r = 0;
-    if depth >= 2
+    if depth >= 1
         return;
     end
 
