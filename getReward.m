@@ -1,7 +1,7 @@
 function r = getReward(s)
     theta = s(1,1);
     thetaDot = s(2,1);
-    setState = pi/2;
+    setState = 0;
     r = 0;
 
     if theta > setState + pi/4 || theta < setState - pi/4
