@@ -94,10 +94,10 @@ for i = 2:maxIterations
         minTheta = theta;
     end
 
-    %if theta < setPoint - pi/3 || theta > setPoint + pi/3
-        %FAIL = true;
-        %break;
-    %end
+    if theta < setPoint - pi/3 || theta > setPoint + pi/3
+        FAIL = true;
+        break;
+    end
     thetaDot = sPrime(2,1);
 
     % Acquire max and min thetaDot
