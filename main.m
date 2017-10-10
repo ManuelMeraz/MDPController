@@ -21,7 +21,7 @@ noise.mu = zeros(dimensions, 1);
 noise.covariance = eye(dimensions) * 0.1;
 
 % State is a struct containing all state parameters
-setPoint = pi/2;
+setPoint = 0;
 state.stateBounds = [setPoint-pi/4, setPoint+pi/4; -5, 5];
 state.numStates = 5;
 
