@@ -21,9 +21,13 @@ noise.mu = zeros(dimensions, 1);
 noise.covariance = eye(dimensions) * 0.1;
 
 % State is a struct containing all state parameters
-setPoint = 0;
-state.stateBounds = [setPoint-pi/4, setPoint+pi/4; -5, 5];
-state.numStates = 5;
+% setPoint is the angle  you want the inverted pendulum to stay balanced at
+state.setPoint = 0;
+
+% depth of recursion tree
+state.depthLimit = 2;
+state.stateBounds = [state.setPoint-pi/4, state.setPoint+pi/4; -5, 5];
+state.numStates = 6;
 
 
 % Calculates the step size between each upper and lower bound
@@ -35,7 +39,7 @@ for dimension = 1:dimensions
 end
 
 % Set of actions
-A = [-200:200];
+A = [-100:100];
 
 % Set of states
 S = [linspace(state.stateBounds(1,1), state.stateBounds(1,2), state.numStates);...
@@ -58,11 +62,11 @@ catch
 
 end
 
-theta = 0;
+theta = pi/4;
 thetaDot = 0;
 data(1,1) = theta;
 data(1,2) = thetaDot;
-data(1,3) = getReward([theta;thetaDot]);
+data(1,3) = getReward(state, [theta;thetaDot]);
 
 u = 0;
 s = mapToDiscreteValue(S, [theta;thetaDot]);
@@ -83,7 +87,7 @@ maxThetaDot = minThetaDot = thetaDot;
 meanTheta = maxTheta = minTheta = theta;
 for i = 2:maxIterations
     sPrime = simulateOneStep(theta, thetaDot, dt, u);
-    meanTheta += theta = sPrime(1,1);
+    meanTheta += theta = sPrime(1,1) + normrnd(noise.mu(1,1),noise.covariance(1,1));
 
     % Avquire max and min theta
     if theta > maxTheta
@@ -94,11 +98,11 @@ for i = 2:maxIterations
         minTheta = theta;
     end
 
-    if theta < setPoint - pi/4 || theta > setPoint + pi/4
+    if theta < state.setPoint - pi/3 || theta > state.setPoint + pi/3
         FAIL = true;
         break;
     end
-    thetaDot = sPrime(2,1);
+    thetaDot = sPrime(2,1) + normrnd(noise.mu(2,1),noise.covariance(2,2));
 
     % Acquire max and min thetaDot
     if thetaDot > maxThetaDot
@@ -111,7 +115,7 @@ for i = 2:maxIterations
 
     data (i,1) = theta;
     data(i,2) = thetaDot;
-    data(i, 3) = getReward([theta;thetaDot]);
+    data(i, 3) = getReward(state, [theta;thetaDot]);
 
     sPrime = mapToDiscreteValue(S, [theta;thetaDot]);
     thetaD = sPrime(1,1);

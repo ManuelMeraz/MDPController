@@ -40,7 +40,7 @@ function a = VStar(discount, state, noise, S, vS, A, dt, s)
             psPrime = getTransitionProbability(T, vS, sPrime);
 
             % Bellman Equation. Sum of future rewards
-            futureRewards = psPrime * (getReward(sPrime) + ...
+            futureRewards = psPrime * (getReward(state, sPrime) + ...
             discount * QStar(depth + 1, discount, state, noise, S, vS, A, dt, sPrime));
             R(2, i) += futureRewards;
         end
@@ -64,7 +64,7 @@ function r = QStar(depth, discount, state, noise, S, vS, A, dt, s)
     % Given a state and action compute the sum of the rewards
     % for all future states
     r = 0;
-    if depth >= 1
+    if depth >= state.depthLimit
         return;
     end
 
@@ -78,7 +78,7 @@ function r = QStar(depth, discount, state, noise, S, vS, A, dt, s)
             sPrime = vS(:,j);
             psPrime = getTransitionProbability(T, vS, sPrime);
             %Bellman Equation. Sum of future rewards
-            r += psPrime * (getReward(sPrime) + ...
+            r += psPrime * (getReward(state, sPrime) + ...
             discount * QStar(depth + 1, discount, state, noise, S, vS, A, dt, sPrime));
         end
     end
