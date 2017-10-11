@@ -11,7 +11,7 @@ end
 
 % Time step size
 dt = 0.1; % Seconds
-maxIterations = 500;
+maxIterations = 1000;
 
 % Number of dimensions state vector is in
 dimensions = 2;
@@ -27,7 +27,7 @@ state.setPoint = 0;
 % depth of recursion tree
 state.depthLimit = 2;
 state.stateBounds = [state.setPoint-pi/4, state.setPoint+pi/4; -5, 5];
-state.numStates = 6;
+state.numStates = 5;
 
 
 % Calculates the step size between each upper and lower bound
@@ -39,7 +39,7 @@ for dimension = 1:dimensions
 end
 
 % Set of actions
-A = [-100:100];
+A = [-100, -10, -5, -1, 0, 1, 5, 10, 100];
 
 % Set of states
 S = [linspace(state.stateBounds(1,1), state.stateBounds(1,2), state.numStates);...
