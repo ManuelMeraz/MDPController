@@ -51,6 +51,7 @@ vS = [reshape(Thetas, 1, numel(Thetas)); reshape(ThetaDots, 1, numel(ThetaDots))
 
 try
     Policy = Policies{state.numStates};
+    Policy(1,1);
 catch
     'Policy does not exist. Generating one for the number of states'
     % Policy is of length numStates and contains the optimal action a 
