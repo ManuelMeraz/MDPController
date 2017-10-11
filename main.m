@@ -98,7 +98,7 @@ for i = 2:maxIterations
         minTheta = theta;
     end
 
-    if theta < state.setPoint - pi/3 || theta > state.setPoint + pi/3
+    if theta < state.setPoint - pi/4 || theta > state.setPoint + pi/4
         FAIL = true;
         break;
     end
@@ -139,7 +139,7 @@ if FAIL
 
     fprintf('Pendulum went out of bounds! Pendulum went out of bounds after %d iterations!\n\n\n', i)
 else
-    fprintf('Pendulum ran was controlled beautifully for %d iterations! \n\n\n', i)
+    fprintf('Pendulum ran beautifully for %d iterations! \n\n\n', i)
 end
 
 fprintf('Max Theta: %d\nMin Theta: %d\nMax ThetaDot: %d\nMin ThetaDot: %d\nMean Theta: %d\n',...
