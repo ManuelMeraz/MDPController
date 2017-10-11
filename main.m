@@ -11,7 +11,7 @@ end
 
 % Time step size
 dt = 0.1; % Seconds
-maxIterations = 1000;
+maxIterations = 500;
 
 % Number of dimensions state vector is in
 dimensions = 2;
@@ -39,7 +39,7 @@ for dimension = 1:dimensions
 end
 
 % Set of actions
-A = [-100, -10, -5, -1, 0, 1, 5, 10, 100];
+A = [-100:100];
 
 % Set of states
 S = [linspace(state.stateBounds(1,1), state.stateBounds(1,2), state.numStates);...
