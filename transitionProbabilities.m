@@ -10,7 +10,7 @@ function T = transitionProbabilities(S, sPrime, parameters, noise)
 
     % Determine transition probability centered around sPrime
     for d = 1:dimensions
-        mu(d, 1) += sPrime(d, 1);
+        mu(d, 1) = mu(d, 1) +  sPrime(d, 1);
     end
 
     % Covariance Matrix
@@ -26,33 +26,33 @@ function T = transitionProbabilities(S, sPrime, parameters, noise)
     % s - deltaX to s + deltaX for every every state s within S
     deltaX = parameters.stepSize(:,1) / 2;
     for d = 1:dimensions
-        T(d, 1) += getLeftProbability(S(d, 1) - deltaX(d, 1),...
+        T(d, 1) = T(d, 1) + getLeftProbability(S(d, 1) - deltaX(d, 1),...
         mu(d, 1), covariance(d, d));
     end
 
 
     %Every value from -inf to s1 maps to s1
     for d = 1:dimensions
-        sum(d, 1) = T(d, 1);
+        sumProb(d, 1) = T(d, 1);
         for s = 1:numStates
             % Probability from -inf to s1 + deltax
             p = getLeftProbability(S(d, s) + deltaX(d, 1), ...
             mu(d, 1), ...
             covariance(d, d));
             
-            p -= sum(d, 1);
+            p -= sumProb(d, 1);
 
             % Probability from (s1 - deltax) to (s1 + deltax)
-            T(d, s) += p ;
-            sum(d, 1) += p;
+            T(d, s) = T(d, s) + p ;
+            sumProb(d, 1) = sumProb(d, 1) + p;
         end
     end
 
 
     % Add in final probability to the last stte
     for d = 1:dimensions
-        T(d, numStates) += 1 - sum(d, 1);
-        sum(d, 1) += 1 - sum(d, 1);
+        T(d, numStates) += 1 - sumProb(d, 1);
+        sumProb(d, 1) = sumProb(d, 1) +  1 - sumProb(d, 1);
     end
 
     [ThetaTransitions, ThetaDotTransitions] = meshgrid(T(1,:), T(2,:));

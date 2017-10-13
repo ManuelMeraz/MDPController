@@ -37,7 +37,7 @@ function startSimulation(sim, params, noise, Policy, S)
         theta = sPrime(1,1);
 
         if sim.addNoise == true
-            theta += normrnd(noise.mu(1,1),noise.covariance(1,1));
+            theta = theta + normrnd(noise.mu(1,1),noise.covariance(1,1));
         end
 
         meanTheta = meanTheta + (1/t)*(theta - meanTheta);
@@ -58,7 +58,7 @@ function startSimulation(sim, params, noise, Policy, S)
 
         thetaDot = sPrime(2,1);
         if sim.addNoise == true
-            thetaDot += normrnd(noise.mu(2,1),noise.covariance(2,2));
+            thetaDot = thetaDot +  normrnd(noise.mu(2,1),noise.covariance(2,2));
         end
 
         meanThetaDot = meanThetaDot + (1/t)*(thetaDot - meanThetaDot);
