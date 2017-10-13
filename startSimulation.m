@@ -35,7 +35,7 @@ function startSimulation(sim, params, noise, Policy, S)
     upperBound = sim.fail.upperBound;
 
     t = 2;
-    while t < maxIterations && !FAIL && ishandle(handle)
+    while t < maxIterations && ~FAIL && ishandle(handle)
 
         % Real value given by math model
         sPrime = simulateOneStep(theta, thetaDot, params.dt, u);
