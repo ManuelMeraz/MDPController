@@ -51,7 +51,7 @@ function T = transitionProbabilities(S, sPrime, parameters, noise)
 
     % Add in final probability to the last stte
     for d = 1:dimensions
-        T(d, numStates) += 1 - sumProb(d, 1);
+        T(d, numStates) = T(d, numStates) + 1 - sumProb(d, 1);
         sumProb(d, 1) = sumProb(d, 1) +  1 - sumProb(d, 1);
     end
 

@@ -1,5 +1,7 @@
 function sPrime = simulateOneStep(theta,thetaDot,deltaT,u)
-    J =  m = l = 1;
+    J = 1;
+    m = 1;
+    l = 1;
     gamma = 0.1;
     g = 9.81;
     Jt = J + m * l ^ 2;
@@ -15,7 +17,7 @@ function sPrime = simulateOneStep(theta,thetaDot,deltaT,u)
     end
 
     while thetaN < -  3.14
-        thetaN += 2 * 3.14;
+        thetaN = thetaN + 2 * 3.14;
     end
 
     sPrime = [thetaN; thetadotN];
