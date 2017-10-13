@@ -40,7 +40,7 @@ function T = transitionProbabilities(S, sPrime, parameters, noise)
             mu(d, 1), ...
             covariance(d, d));
             
-            p -= sumProb(d, 1);
+            p = p - sumProb(d, 1);
 
             % Probability from (s1 - deltax) to (s1 + deltax)
             T(d, s) = T(d, s) + p ;

@@ -13,7 +13,7 @@ function sPrime = simulateOneStep(theta,thetaDot,deltaT,u)
 
     % Make sure theta stays within allowable range
     while thetaN >  3.14
-        thetaN -= 2 * 3.14;
+        thetaN = thetaN - 2 * 3.14;
     end
 
     while thetaN < -  3.14
