@@ -1,7 +1,7 @@
 function startSimulation(sim, params, noise, Policy, S)
 
     % Plot settings
-    graphics_toolkit('fltk')
+    %graphics_toolkit('fltk')
     handle = figure('Position',[0.1,0.1,1000,700]);
 
     % Iniital Simulation Parameters
@@ -21,8 +21,13 @@ function startSimulation(sim, params, noise, Policy, S)
     data(1,3) = getReward(params, s);
 
     % Keep track of statistics
-    meanThetaDot = maxThetaDot = minThetaDot = thetaDot;
-    meanTheta = maxTheta = minTheta = theta;
+    meanThetaDot = thetaDot;
+    maxThetaDot = thetaDot;
+    minThetaDot = thetaDot;
+
+    meanTheta = theta;
+    maxTheta = theta;
+    minTheta = theta;
 
     % When pendulum goes out of bounds, this will be true
     FAIL = false;
@@ -134,7 +139,7 @@ function startSimulation(sim, params, noise, Policy, S)
 
     end
 
-    graphics_toolkit('gnuplot')
+    %graphics_toolkit('gnuplot')
     handle = figure('Position',[0.1,0.1,1000,700]);
     plot(data);
     drawnow;
