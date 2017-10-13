@@ -1,4 +1,4 @@
-function T = transitionProbabilities(S, sPrime, state, noise)
+function T = transitionProbabilities(S, sPrime, parameters, noise)
     % S is the set of discretized states
     % sPrime is the next possible state after state s and action a
     % state is the parameters for the given discrete states
@@ -17,14 +17,14 @@ function T = transitionProbabilities(S, sPrime, state, noise)
     covariance = noise.covariance;
 
     % Number of vector states in S
-    numStates = state.numStates;
+    numStates = parameters.numStates;
 
     % Weights for Transitions 
     T = zeros(dimensions, numStates);
 
     % We are going to calculate the transition probability from 
     % s - deltaX to s + deltaX for every every state s within S
-    deltaX = state.stepSize(:,1) / 2;
+    deltaX = parameters.stepSize(:,1) / 2;
     for d = 1:dimensions
         T(d, 1) += getLeftProbability(S(d, 1) - deltaX(d, 1),...
         mu(d, 1), covariance(d, d));

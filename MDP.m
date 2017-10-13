@@ -1,24 +1,30 @@
-function Policy = MDP(state, noise, S, vS, A, dt)
+function Policy = MDP(params, noise, S, A)
     % Returns the optimal policy of inverted pendulum 
     % with given a set of states S, possible actions A
     % O(A * S^2)
 
-    numStates = state.numStates;
-    discount = 0.9;
+    % Generate all possible state vectors
+    % e.g. [theta1 theta1 theta2 theta2; thetaDot1 thetaDot2 thetaDot1 thetadot2]
+    [Thetas, ThetaDots] = meshgrid(S(1,:), S(2,:));
+    vS = [reshape(Thetas, 1, numel(Thetas)); reshape(ThetaDots, 1, numel(ThetaDots))];
+
+    numStates = params.numStates;
+    discount = params.discount;
+    dt = params.dt;
 
     length = length(vS);
     for i = 1:length
         PercentageCompleted = i/length * 100
         s = vS(:,i);
         Policy(:,i) = s;
-        bestActions(:,i) = VStar(discount, state, noise, S, vS, A, dt, vS(:,i));
+        bestActions(:,i) = VStar(discount, params, noise, S, vS, A, dt, vS(:,i));
     end
 
     Policy = [Policy; bestActions];
 
 end
 
-function a = VStar(discount, state, noise, S, vS, A, dt, s)
+function a = VStar(discount, params, noise, S, vS, A, dt, s)
     % Given a state s, compute the expection for every action for every
     % possible future state. Return the max.
 
@@ -32,16 +38,15 @@ function a = VStar(discount, state, noise, S, vS, A, dt, s)
 
         % Compute the next state for the given 
         sPrime = simulateOneStep(s(1,1), s(2,1), dt, a);
-        T = transitionProbabilities(S, sPrime, state, noise);
-        sPrime = mapToDiscreteValue(S, sPrime);
+        T = transitionProbabilities(S, sPrime, params, noise);
         for j = 1:length(vS)
 
             sPrime = vS(:,j);
             psPrime = getTransitionProbability(T, vS, sPrime);
 
             % Bellman Equation. Sum of future rewards
-            futureRewards = psPrime * (getReward(state, sPrime) + ...
-            discount * QStar(depth + 1, discount, state, noise, S, vS, A, dt, sPrime));
+            futureRewards = psPrime * (getReward(params, sPrime) + ...
+            discount * QStar(depth + 1, discount, params, noise, S, vS, A, dt, sPrime));
             R(2, i) += futureRewards;
         end
     end
@@ -60,26 +65,25 @@ end
 
 
 
-function r = QStar(depth, discount, state, noise, S, vS, A, dt, s)
+function r = QStar(depth, discount, params, noise, S, vS, A, dt, s)
     % Given a state and action compute the sum of the rewards
     % for all future states
     r = 0;
-    if depth >= state.depthLimit
+    if depth >= params.depthLimit
         return;
     end
 
     for i = 1:length(A)
         a = A(1, i);
         sPrime = simulateOneStep(s(1,1), s(2,1), dt, a);
-        T = transitionProbabilities(S, sPrime, state, noise);
-        sPrime = mapToDiscreteValue(S, sPrime);
+        T = transitionProbabilities(S, sPrime, params, noise);
 
         for j = 1:length(vS)
             sPrime = vS(:,j);
             psPrime = getTransitionProbability(T, vS, sPrime);
             %Bellman Equation. Sum of future rewards
-            r += psPrime * (getReward(state, sPrime) + ...
-            discount * QStar(depth + 1, discount, state, noise, S, vS, A, dt, sPrime));
+            r += psPrime * (getReward(params, sPrime) + ...
+            discount * QStar(depth + 1, discount, params, noise, S, vS, A, dt, sPrime));
         end
     end
 end

@@ -9,86 +9,104 @@ catch
     'File does not exist'
 end
 
-% Time step size
-dt = 0.1; % Seconds
-maxIterations = 500;
 
-% Number of dimensions state vector is in
-dimensions = 2;
-
-% Noise contains all noise parameters
-noise.mu = zeros(dimensions, 1);
-noise.covariance = eye(dimensions) * 0.1;
-
-% State is a struct containing all state parameters
+% params is a struct containing all MDP params
 % setPoint is the angle  you want the inverted pendulum to stay balanced at
-state.setPoint = 0;
+params.setPoint = 0;
 
 % depth of recursion tree
-state.depthLimit = 2;
-state.stateBounds = [state.setPoint-pi/4, state.setPoint+pi/4; -5, 5];
-state.numStates = 5;
+params.depthLimit = 1; % Stop it at a low depth for faster computation
+params.stateBounds = [params.setPoint-pi/4, params.setPoint+pi/4; -5, 5];
+params.numStates = 5; % Low states faster to compute and works good enough
+params.discount = 0.95; % High discount means future rewards matter more
 
+% Time step size
+params.dt = 0.1; % Seconds
+
+% Number of dimensions state vector is in
+params.dimensions = 2; % Don't modify this. 
+
+% Noise contains all noise params
+noise.mu = zeros(params.dimensions, 1);
+noise.covariance = [0.01, 0; 0, 0.001];
 
 % Calculates the step size between each upper and lower bound
-for dimension = 1:dimensions
+for d = 1:params.dimensions
     % Step size is (outer bound - inner bound) / number of states
-    state.stepSize(dimension, 1) = (...
-    (state.stateBounds(dimension, 2) - state.stateBounds(dimension, 1))/...
-    state.numStates);
+    params.stepSize(d, 1) = (...
+    (params.stateBounds(d, 2) - params.stateBounds(d, 1))/...
+    params.numStates);
 end
 
+% Simulation Parameters
+sim.interval = 500;
+sim.thetaNaught = params.setPoint; % Center it around the setPoint
+sim.thetaDotNaught = 0; % Start sim standing still
+
+% difference from setpoint where sim will cause policy to fail
+% Larger values will give more wiggle room 
+sim.fail.upperBound = params.setPoint + pi/4;
+sim.fail.lowerBound = params.setPoint - pi/4;
+
+% Will add noise to sim if true, false will show no noise
+sim.addNoise = true;
+
+
 % Set of actions
+% Higher resolution action set helps improve balancing
 A = [-100:100];
 
-% Set of states
-S = [linspace(state.stateBounds(1,1), state.stateBounds(1,2), state.numStates);...
-linspace(state.stateBounds(2,1), state.stateBounds(2,2), state.numStates)];
-
-% Generate all possible state vectors
-[Thetas, ThetaDots] = meshgrid(S(1,:), S(2,:));
-vS = [reshape(Thetas, 1, numel(Thetas)); reshape(ThetaDots, 1, numel(ThetaDots))];
+% Set of states. [theta1 theta2 ... thetan;thetaDot1 thetaDot2 .... thetaDotn]
+S = [linspace(params.stateBounds(1,1), params.stateBounds(1,2), params.numStates);...
+linspace(params.stateBounds(2,1), params.stateBounds(2,2), params.numStates)];
 
 try
-    Policy = Policies{state.numStates};
-    Policy(1,1);
+    Policy = Policies{params.numStates};
+    Policy(1,1); % Check to see if it's not empty
 catch
     'Policy does not exist. Generating one for the number of states'
     % Policy is of length numStates and contains the optimal action a 
     % in the corresponding column of state s in the set S
-    Policy = MDP(state, noise, S, vS, A, dt, dimensions);
+    Policy = MDP(params, noise, S, A);
 
-    Policies{state.numStates} = Policy;
+    Policies{params.numStates} = Policy;
     save('Policies.mat', 'Policies');
-
 end
 
-theta = pi/4;
-thetaDot = 0;
+% Iniital Simulation Parameters
+theta = sim.thetaNaught;
+thetaDot = sim.thetaDotNaught;
+interval = sim.interval;
+
+% Make sure state is a discretized value within policy 
+s = mapToDiscreteValue(S, [theta;thetaDot]);
+u = getActionFromPolicy(Policy, s);
+
+% Data for plot
 data(1,1) = theta;
 data(1,2) = thetaDot;
-data(1,3) = getReward(state, [theta;thetaDot]);
+data(1,3) = getReward(params, s);
 
-u = 0;
-s = mapToDiscreteValue(S, [theta;thetaDot]);
-e = 0.00001;
-for i = 1:length(Policy)
-    if s(1,1) <= Policy(1,i)+e && s(1,1) >= Policy(1,i)-e ...
-       && s(2,1) <= Policy(2,i)+e && s(2,1) >= Policy(2,i)-e 
-
-        u = Policy(3, i);
-        %data(1,3) = u;
-        break;
-    end
-end
-
-i = 2;
-FAIL = false;
+% Keep track of statistics
 maxThetaDot = minThetaDot = thetaDot;
 meanTheta = maxTheta = minTheta = theta;
-for i = 2:maxIterations
-    sPrime = simulateOneStep(theta, thetaDot, dt, u);
-    meanTheta += theta = sPrime(1,1) + normrnd(noise.mu(1,1),noise.covariance(1,1));
+
+% When pendulum goes out of bounds, this will be true
+FAIL = false;
+lowerBound = sim.fail.lowerBound;
+upperBound = sim.fail.upperBound;
+
+for i = 2:interval
+
+    % Real value given by math model
+    sPrime = simulateOneStep(theta, thetaDot, params.dt, u);
+    theta = sPrime(1,1);
+
+    if sim.addNoise == true
+        theta += normrnd(noise.mu(1,1),noise.covariance(1,1));
+    end
+
+    meanTheta += theta;
 
     % Avquire max and min theta
     if theta > maxTheta
@@ -99,11 +117,15 @@ for i = 2:maxIterations
         minTheta = theta;
     end
 
-    if theta < state.setPoint - pi/4 || theta > state.setPoint + pi/4
+    if theta < lowerBound || theta > upperBound
         FAIL = true;
         break;
     end
-    thetaDot = sPrime(2,1) + normrnd(noise.mu(2,1),noise.covariance(2,2));
+
+    thetaDot = sPrime(2,1);
+    if sim.addNoise == true
+        thetaDot += normrnd(noise.mu(2,1),noise.covariance(2,2));
+    end
 
     % Acquire max and min thetaDot
     if thetaDot > maxThetaDot
@@ -116,24 +138,18 @@ for i = 2:maxIterations
 
     data (i,1) = theta;
     data(i,2) = thetaDot;
-    data(i, 3) = getReward(state, [theta;thetaDot]);
+    data(i, 3) = getReward(params, [theta;thetaDot]);
 
+    % Discretized theta and thetaDot
     sPrime = mapToDiscreteValue(S, [theta;thetaDot]);
-    thetaD = sPrime(1,1);
-    thetaDotD = sPrime(2,1);
 
-    for j = 1:length(Policy)
-        if thetaD <= Policy(1,j)+e && thetaD >= Policy(1,j)-e ...
-           && thetaDotD<= Policy(2,j)+e && thetaDotD >= Policy(2,j)-e 
-            u = Policy(3, j);
-            %data(i,3) = u;
-            break;
-        end
-    end
+    u = getActionFromPolicy(Policy, sPrime);
+    %data(i,3) = u;
 end
 
-meanTheta /= maxIterations;
+meanTheta /= interval;
 
+% Show the policy used
 Policy
 
 if FAIL 
@@ -149,10 +165,11 @@ maxTheta, minTheta, maxThetaDot, minThetaDot, meanTheta)
 fprintf('\n\n\n')
 
 figure('Position',[0,0,1300,700]);
-h = plot(data, 'linewidth', 1);
+plot(data, 'linewidth', 1);
 set(gca, "linewidth", 4, "fontsize", 12)
 title("Inverted Pendulum controlled with MDP");
 %legend('Theta', 'ThetaDot', 'Force', 'Reward');
 legend('Theta', 'ThetaDot', 'Reward');
 %legend('Theta');
 pause();
+

@@ -1,7 +1,7 @@
-function r = getReward(state, s)
+function r = getReward(paramteters, s)
     theta = s(1,1);
     thetaDot = s(2,1);
-    setPoint = state.setPoint;
+    setPoint = paramteters.setPoint;
     r = 0;
 
     if theta > setPoint + pi/4 || theta < setPoint - pi/4
