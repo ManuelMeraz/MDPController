@@ -39,7 +39,7 @@ for d = 1:params.dimensions
 end
 
 % Simulation Parameters
-sim.interval = 500;
+sim.interval = 10000;
 sim.thetaNaught = params.setPoint; % Center it around the setPoint
 sim.thetaDotNaught = 0; % Start sim standing still
 
