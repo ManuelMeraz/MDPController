@@ -12,9 +12,9 @@ function Policy = MDP(params, noise, S, A)
     discount = params.discount;
     dt = params.dt;
 
-    length = length(vS);
-    for i = 1:length
-        PercentageCompleted = i/length * 100
+    totalStates = length(vS);
+    for i = 1:totalStates
+        PercentageCompleted = i/totalStates * 100
         s = vS(:,i);
         Policy(:,i) = s;
         bestActions(:,i) = VStar(discount, params, noise, S, vS, A, dt, vS(:,i));
@@ -47,7 +47,7 @@ function a = VStar(discount, params, noise, S, vS, A, dt, s)
             % Bellman Equation. Sum of future rewards
             futureRewards = psPrime * (getReward(params, sPrime) + ...
             discount * QStar(depth + 1, discount, params, noise, S, vS, A, dt, sPrime));
-            R(2, i) += futureRewards;
+            R(2, i) = R(2,i) +  futureRewards;
         end
     end
 
@@ -82,7 +82,7 @@ function r = QStar(depth, discount, params, noise, S, vS, A, dt, s)
             sPrime = vS(:,j);
             psPrime = getTransitionProbability(T, vS, sPrime);
             %Bellman Equation. Sum of future rewards
-            r += psPrime * (getReward(params, sPrime) + ...
+            r = r +  psPrime * (getReward(params, sPrime) + ...
             discount * QStar(depth + 1, discount, params, noise, S, vS, A, dt, sPrime));
         end
     end
