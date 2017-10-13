@@ -2,12 +2,13 @@ function startSimulation(sim, params, noise, Policy, S)
 
     % Plot settings
     graphics_toolkit('fltk')
-    handle = figure('Position',[0,0,1300,700]);
+    handle = figure('Position',[0.1,0.1,1000,700]);
 
     % Iniital Simulation Parameters
     theta = sim.thetaNaught;
     thetaDot = sim.thetaDotNaught;
     interval = sim.interval;
+    maxIterations = sim.maxIterations;
 
     % Make sure state is a discretized value within policy 
     s = mapToDiscreteValue(S, [theta;thetaDot]);
@@ -20,7 +21,7 @@ function startSimulation(sim, params, noise, Policy, S)
     data(1,3) = getReward(params, s);
 
     % Keep track of statistics
-    maxThetaDot = minThetaDot = thetaDot;
+    meanThetaDot = maxThetaDot = minThetaDot = thetaDot;
     meanTheta = maxTheta = minTheta = theta;
 
     % When pendulum goes out of bounds, this will be true
@@ -29,7 +30,7 @@ function startSimulation(sim, params, noise, Policy, S)
     upperBound = sim.fail.upperBound;
 
     t = 2;
-    while t < interval && !FAIL && ishandle(handle)
+    while t < maxIterations && !FAIL && ishandle(handle)
 
         % Real value given by math model
         sPrime = simulateOneStep(theta, thetaDot, params.dt, u);
@@ -39,7 +40,7 @@ function startSimulation(sim, params, noise, Policy, S)
             theta += normrnd(noise.mu(1,1),noise.covariance(1,1));
         end
 
-        meanTheta += theta;
+        meanTheta = meanTheta + (1/t)*(theta - meanTheta);
 
         % Avquire max and min theta
         if theta > maxTheta
@@ -60,6 +61,8 @@ function startSimulation(sim, params, noise, Policy, S)
             thetaDot += normrnd(noise.mu(2,1),noise.covariance(2,2));
         end
 
+        meanThetaDot = meanThetaDot + (1/t)*(thetaDot - meanThetaDot);
+
         % Acquire max and min thetaDot
         if thetaDot > maxThetaDot
             maxThetaDot = thetaDot;
@@ -72,21 +75,54 @@ function startSimulation(sim, params, noise, Policy, S)
         % Update data for plot
         data = [data; [theta, thetaDot, getReward(params, s)]];
 
-        if t - 100 < 0 
+        if t - interval < 0 
             leftBoundPlot = sim.thetaNaught;
         else
-            leftBoundPlot =  t - 100;
+            leftBoundPlot =  t - interval;
         end
 
         % Plot settings
+        subplot('Position',[0.1,0.1,0.7,0.8])
         plot(data);
-        set(findall(gca, 'Type', 'Line'), "linewidth", 1)
         title("Inverted Pendulum controlled with MDP");
         legend('Theta', 'ThetaDot', 'Reward');
-        axis([leftBoundPlot , t]);
+        axis([leftBoundPlot , t + interval]);
         grid
+
+        h = subplot('Position',[0.85,0.1,0.05,0.8]);
+
+        % hide the axes and ticks
+        set(h,'Visible','off');
+
+        % add the statistics
+        text(0,0.5,"Theta",'Parent',h);
+
+        output = strcat("Mean: ", num2str(meanTheta));
+        text(0,0.48,output,'Parent',h);
+
+        output = strcat("Minimum: ", num2str(minTheta));
+        text(0,0.46,output,'Parent',h);
+
+        output = strcat("Maximum: ", num2str(maxTheta));
+        text(0,0.44,output,'Parent',h);
+
+        text(0,0.40,"Theta Dot",'Parent',h);
+
+        output = strcat("Mean: ", num2str(meanThetaDot));
+        text(0,0.38,output,'Parent',h);
+
+        output = strcat("Minimum: ", num2str(minThetaDot));
+        text(0,0.36,output,'Parent',h);
+
+        output = strcat("Maximum: ", num2str(maxThetaDot));
+        text(0,0.34,output,'Parent',h);
+        
         drawnow;
         pause(0.0001);
+
+        if ishandle(handle)
+            delete(h);
+        end
 
 
         % Discretized theta and thetaDot
@@ -98,8 +134,10 @@ function startSimulation(sim, params, noise, Policy, S)
 
     end
 
-    meanTheta /= interval;
-
+    graphics_toolkit('gnuplot')
+    handle = figure('Position',[0.1,0.1,1000,700]);
+    plot(data);
+    drawnow;
     % Show the policy used
     Policy
 
@@ -114,6 +152,5 @@ function startSimulation(sim, params, noise, Policy, S)
     maxTheta, minTheta, maxThetaDot, minThetaDot, meanTheta)
 
     fprintf('\n\n\n')
-
-
+    pause();
 end

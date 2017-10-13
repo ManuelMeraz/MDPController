@@ -15,7 +15,7 @@ end
 params.setPoint = 0;
 
 % depth of recursion tree
-params.depthLimit = 1; % Stop it at a low depth for faster computation
+params.depthLimit = 2; % Stop it at a low depth for faster computation
 params.stateBounds = [params.setPoint-pi/4, params.setPoint+pi/4; -5, 5];
 params.numStates = 5; % Low states faster to compute and works good enough
 params.discount = 0.95; % High discount means future rewards matter more
@@ -39,7 +39,8 @@ for d = 1:params.dimensions
 end
 
 % Simulation Parameters
-sim.interval = 10000;
+sim.interval = 100; % The width of the plot for live view
+sim.maxIterations = 500; % Stops after maxIterations
 sim.thetaNaught = params.setPoint; % Center it around the setPoint
 sim.thetaDotNaught = 0; % Start sim standing still
 
