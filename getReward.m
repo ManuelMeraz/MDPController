@@ -15,7 +15,7 @@ function r = getReward(paramteters, s)
     end
 
     if theta <= setPoint + 0.1 &&  theta >= setPoint -0.1
-        r *= 3;
+        r = r * 3;
     end
      
 end
