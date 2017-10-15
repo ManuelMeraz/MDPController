@@ -17,7 +17,7 @@ params.setPoint = 0;
 % depth of recursion tree
 params.depthLimit = 2; % Stop it at a low depth for faster computation
 params.stateBounds = [params.setPoint-pi/4, params.setPoint+pi/4; -5, 5];
-params.numStates = 5; % Low states faster to compute and works good enough
+params.numStates = 10; % Low states faster to compute and works good enough
 params.discount = 0.95; % High discount means future rewards matter more
 
 % Time step size
@@ -55,22 +55,26 @@ sim.addNoise = true;
 
 % Set of actions
 % Higher resolution action set helps improve balancing
-A = [-100:100];
+A = [-100, -35, -10, -5, -1, 0, 1, 5, 10, 35, 100];
 
 % Set of states. [theta1 theta2 ... thetan;thetaDot1 thetaDot2 .... thetaDotn]
 S = [linspace(params.stateBounds(1,1), params.stateBounds(1,2), params.numStates);...
 linspace(params.stateBounds(2,1), params.stateBounds(2,2), params.numStates)];
 
 try
-    Policy = Policies{params.numStates};
+    Policy = Policies{params.numStates, params.depthLimit, params.setPoint + 1};
     Policy(1,1); % Check to see if it's not empty
 catch
     'Policy does not exist. Generating one for the number of states'
     % Policy is of length numStates and contains the optimal action a 
     % in the corresponding column of state s in the set S
+    profile on;
     Policy = MDP(params, noise, S, A);
+    profile off;
+    data = profile ("info");
+    profshow (data, 10);
 
-    Policies{params.numStates} = Policy;
+    Policies{params.numStates, params.depthLimit, params.setPoint + 1} = Policy;
     save('Policies.mat', 'Policies');
 end
 

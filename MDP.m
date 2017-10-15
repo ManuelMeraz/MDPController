@@ -39,10 +39,15 @@ function a = VStar(discount, params, noise, S, vS, A, dt, s)
         % Compute the next state for the given 
         sPrime = simulateOneStep(s(1,1), s(2,1), dt, a);
         T = transitionProbabilities(S, sPrime, params, noise);
+        T = T(1,:) .* T(2,:);
         for j = 1:length(vS)
 
             sPrime = vS(:,j);
-            psPrime = getTransitionProbability(T, vS, sPrime);
+            psPrime = T(1,j);
+
+            if psPrime <  0.001
+                continue;
+            end
 
             % Bellman Equation. Sum of future rewards
             futureRewards = psPrime * (getReward(params, sPrime) + ...
@@ -77,28 +82,18 @@ function r = QStar(depth, discount, params, noise, S, vS, A, dt, s)
         a = A(1, i);
         sPrime = simulateOneStep(s(1,1), s(2,1), dt, a);
         T = transitionProbabilities(S, sPrime, params, noise);
+        T = T(1,:) .* T(2,:);
 
         for j = 1:length(vS)
             sPrime = vS(:,j);
-            psPrime = getTransitionProbability(T, vS, sPrime);
+            psPrime = T(1,j);
+
+            if psPrime < 0.001
+                continue;
+            end
             %Bellman Equation. Sum of future rewards
             r = r +  psPrime * (getReward(params, sPrime) + ...
             discount * QStar(depth + 1, discount, params, noise, S, vS, A, dt, sPrime));
         end
     end
-end
-
-function ps = getTransitionProbability(T, S, sPrime) 
-   % Given a state and transition matrix, return the transition probability
-   % for that state 
-
-   for i = 1:length(S)
-       if sPrime(1,1) == S(1,i) && sPrime(2,1) == S(2,i)
-           index = i;
-           theta = sPrime(1,1);
-           thetaDot = sPrime(2,1);
-           ps = T(1,i) * T(2,i);
-       end
-   end
-
 end
