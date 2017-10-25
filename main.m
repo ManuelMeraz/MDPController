@@ -17,7 +17,7 @@ params.setPoint = 0;
 % depth of recursion tree
 params.depthLimit = 2; % Stop it at a low depth for faster computation
 params.stateBounds = [params.setPoint-pi/4, params.setPoint+pi/4; -5, 5];
-params.numStates = 10; % Low states faster to compute and works good enough
+params.numStates = 15; % Low states faster to compute and works good enough
 params.discount = 0.95; % High discount means future rewards matter more
 
 % Time step size
@@ -68,11 +68,7 @@ catch
     'Policy does not exist. Generating one for the number of states'
     % Policy is of length numStates and contains the optimal action a 
     % in the corresponding column of state s in the set S
-    profile on;
     Policy = MDP(params, noise, S, A);
-    profile off;
-    data = profile ("info");
-    profshow (data, 10);
 
     Policies{params.numStates, params.depthLimit, params.setPoint + 1} = Policy;
     save('Policies.mat', 'Policies');

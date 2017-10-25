@@ -91,7 +91,7 @@ function startSimulation(sim, params, noise, Policy, S)
         plot(data);
         title("Inverted Pendulum controlled with MDP");
         legend('Theta', 'ThetaDot', 'Reward');
-        axis([leftBoundPlot , t + interval]);
+        %axis([leftBoundPlot , t + interval]);
         grid
 
         h = subplot('Position',[0.85,0.1,0.05,0.8]);
@@ -99,29 +99,6 @@ function startSimulation(sim, params, noise, Policy, S)
         % hide the axes and ticks
         set(h,'Visible','off');
 
-        % add the statistics
-        text(0,0.5,"Theta",'Parent',h);
-
-        output = strcat("Mean: ", num2str(meanTheta));
-        text(0,0.48,output,'Parent',h);
-
-        output = strcat("Minimum: ", num2str(minTheta));
-        text(0,0.46,output,'Parent',h);
-
-        output = strcat("Maximum: ", num2str(maxTheta));
-        text(0,0.44,output,'Parent',h);
-
-        text(0,0.40,"Theta Dot",'Parent',h);
-
-        output = strcat("Mean: ", num2str(meanThetaDot));
-        text(0,0.38,output,'Parent',h);
-
-        output = strcat("Minimum: ", num2str(minThetaDot));
-        text(0,0.36,output,'Parent',h);
-
-        output = strcat("Maximum: ", num2str(maxThetaDot));
-        text(0,0.34,output,'Parent',h);
-        
         drawnow;
         pause(0.0001);
 

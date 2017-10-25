@@ -1,3 +1,5 @@
+
+
 function sPrime = mapToDiscreteValue(S, sPrime)
     % Map the real value given to us by the pendulum dynamics function
     % to a discrete state
